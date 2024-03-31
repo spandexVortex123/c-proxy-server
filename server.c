@@ -1,14 +1,15 @@
-#include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <errno.h>
 #include <pthread.h> // need later for multi-threading
+#include "utils.h"
+#include <string.h>
 
 #define LISTEN_PORT 8000
+#define HEADER "HTTP/1.1 200 OK\nServer: Apache/2.2.14 (Win32)\nContent-Type: text/html\n\n"
+#define HEADER_SIZE get_size_for_char_ptr(HEADER)
 
 struct client_data {
 	int new_socket;
@@ -18,6 +19,7 @@ struct client_data {
 // function to handle connection
 void handle_connection(int new_socket) {
 	int data_size = 0;
+	sleep(1);
 	ioctl(new_socket, FIONREAD, &data_size);
 	printf("Data size received from client = %d\n", data_size);
 	char* buffer = (char *) malloc(data_size);
@@ -30,8 +32,41 @@ void handle_connection(int new_socket) {
 	printf("******************data received\n %s\n *********************\n", buffer);
 	char* message = "HTTP/1.1 200 OK\nServer: Apache/2.2.14 (Win32)\nContent-Type: text/html\n\n<h1>Hello, World!</h1>";
 	printf("writing message = %s\n", message);
-	int bytes_written = write(new_socket, message, 93);
+
+	printf("header size = %d\n", HEADER_SIZE);
+
+	struct file_info* fi = get_file_details("sample.txt");
+
+	int final_buffer_size = HEADER_SIZE + fi->size;
+
+	char* final_buffer = malloc(sizeof(char) * final_buffer_size);
+
+	strncpy(final_buffer, HEADER, HEADER_SIZE);
+	strncat(final_buffer, fi->content, fi->size);
+
+	// printf("(((((((((((((((((((( map stuff ))))))))))))))))))))\n");
+
+	// struct map* m = initialize_map();
+	// put(m, "key1", "value1");
+	// put(m, "k2", "v2");
+	// put(m, "k2", "value2");
+	// put(m, "k3", "value1");
+	// print_map(m);
+
+	// printf("(((((((((((((((((((( map stuff ))))))))))))))))))))\n");
+
+	printf("(((((((((((((((((((( tokenize stuff ))))))))))))))))))))\n");
+
+	char* buffer2 = malloc(data_size);
+	memcpy(buffer2, buffer, data_size);
+	char** lines = tokenize_req_headers(buffer2);
+	print_tokenized_req_headers(lines);
+
+	printf("(((((((((((((((((((( tokenize stuff ))))))))))))))))))))\n");
+
+	int bytes_written = write(new_socket, final_buffer, final_buffer_size - 1);
 	printf("Bytes written = %d\n", bytes_written);
+	free(final_buffer);
 	close(new_socket);
 }
 

@@ -1,5 +1,5 @@
 all:
-	gcc server.c -g -o server -Wall -Wextra
+	gcc server.c utils.c -g -o server -Wall -Wextra
 
 clean:
 	rm server
