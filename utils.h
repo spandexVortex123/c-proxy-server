@@ -52,3 +52,12 @@ char** tokenize_req_headers(char* buffer);
 
 // print tokenized req headers
 void print_tokenized_req_headers(char** lines);
+
+// struct containing method and requested url
+struct method_details {
+	char* method;
+	char* url;
+};
+
+// get method type based on request headers (need to free)
+struct method_details* get_method_type(char* first_line);

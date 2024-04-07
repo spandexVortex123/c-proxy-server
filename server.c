@@ -10,6 +10,7 @@
 #define LISTEN_PORT 8000
 #define HEADER "HTTP/1.1 200 OK\nServer: Apache/2.2.14 (Win32)\nContent-Type: text/html\n\n"
 #define HEADER_SIZE get_size_for_char_ptr(HEADER)
+#define GET "GET"
 
 struct client_data {
 	int new_socket;
@@ -44,6 +45,10 @@ void handle_connection(int new_socket) {
 	strncpy(final_buffer, HEADER, HEADER_SIZE);
 	strncat(final_buffer, fi->content, fi->size);
 
+	// buffer2 is for parsing
+	char* buffer2 = malloc(data_size);
+	memcpy(buffer2, buffer, data_size);
+
 	// printf("(((((((((((((((((((( map stuff ))))))))))))))))))))\n");
 
 	// struct map* m = initialize_map();
@@ -56,11 +61,16 @@ void handle_connection(int new_socket) {
 	// printf("(((((((((((((((((((( map stuff ))))))))))))))))))))\n");
 
 	printf("(((((((((((((((((((( tokenize stuff ))))))))))))))))))))\n");
-
-	char* buffer2 = malloc(data_size);
-	memcpy(buffer2, buffer, data_size);
 	char** lines = tokenize_req_headers(buffer2);
-	print_tokenized_req_headers(lines);
+	//print_tokenized_req_headers(lines);
+	printf("first line before 2nd tokenization: %s\n", lines[0]);
+	struct method_details* md = get_method_type(lines[0]);
+	printf("Method: %s\n", md->method);
+	printf("Url: %s\n", md->url);
+	free(md->method);
+	free(md->url);
+	free(md);
+	printf("first line after 2nd tokenizing: %s\n", lines[0]);
 
 	printf("(((((((((((((((((((( tokenize stuff ))))))))))))))))))))\n");
 
@@ -68,6 +78,18 @@ void handle_connection(int new_socket) {
 	printf("Bytes written = %d\n", bytes_written);
 	free(final_buffer);
 	close(new_socket);
+}
+
+struct file_info* parse_request(struct method_details* md) {
+	if (md == NULL) {
+		fprintf(stderr, "Error, invalid method details struct\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (strcmp(md->method, GET) == 0) {
+		// get method
+		
+	}
 }
 
 void* testThread(void *ptrs) {

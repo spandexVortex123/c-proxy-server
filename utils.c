@@ -195,3 +195,45 @@ void print_tokenized_req_headers(char** lines) {
         i +=1 ;
     }
 }
+
+// get method type based on request (need to free)
+struct method_details* get_method_type(char* first_line) {
+    if (first_line == NULL) {
+        fprintf(stderr, "Error reading request data\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int size = get_size_for_char_ptr(first_line);
+    char* buffer = malloc(sizeof(char) * size);
+    if (buffer == NULL) {
+        fprintf(stderr, "Error creating buffer for copy of first line\n");
+        exit(EXIT_FAILURE);
+    }
+
+    memcpy(buffer, first_line, size);
+
+    char* DELIM = " ";
+    char* word = strtok(buffer, DELIM);
+    char* word2 = strtok(NULL, DELIM);
+    printf("word2: %s\n", word2);
+    int word_size1 = get_size_for_char_ptr(word);
+    char* word_buffer1 = malloc(sizeof(char) * word_size1);
+    if (word_buffer1 == NULL) {
+        fprintf(stderr, "Error creating buffer for word\n");
+        exit(EXIT_FAILURE);
+    }
+    memcpy(word_buffer1, word, word_size1);
+    int word_size2 = get_size_for_char_ptr(word2);
+    char* word_buffer2 = malloc((sizeof(char) * word_size2) - 1); // one less to not include the beginning `/`
+    if (word_buffer2 == NULL) {
+        fprintf(stderr, "error creating word buffer2\n");
+        exit(EXIT_FAILURE);
+    }
+    memcpy(word_buffer2, word2 + 1, word_size2); // start from 2nd byte (1st index) to exclue beginning `/`
+    struct method_details* md = malloc(sizeof(struct method_details));
+    memset(md, 0x0, sizeof(struct method_details));
+    md->method = word_buffer1;
+    md->url =  word_buffer2;
+    free(buffer);
+    return md;
+}
