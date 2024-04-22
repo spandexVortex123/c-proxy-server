@@ -61,3 +61,6 @@ struct method_details {
 
 // get method type based on request headers (need to free)
 struct method_details* get_method_type(char* first_line);
+
+// convert request into map
+void convert_to_map(struct map* m, char** request_lines);

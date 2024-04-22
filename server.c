@@ -22,7 +22,7 @@ void handle_connection(int new_socket) {
 	int data_size = 0;
 	sleep(1);
 	ioctl(new_socket, FIONREAD, &data_size);
-	printf("Data size received from client = %d\n", data_size);
+	// printf("Data size received from client = %d\n", data_size);
 	char* buffer = (char *) malloc(data_size);
 	if (buffer == NULL) {
 		fprintf(stderr, "Error creating buffer\n");
@@ -34,7 +34,7 @@ void handle_connection(int new_socket) {
 	char* message = "HTTP/1.1 200 OK\nServer: Apache/2.2.14 (Win32)\nContent-Type: text/html\n\n<h1>Hello, World!</h1>";
 	printf("writing message = %s\n", message);
 
-	printf("header size = %d\n", HEADER_SIZE);
+	// printf("header size = %d\n", HEADER_SIZE);
 
 	struct file_info* fi = get_file_details("sample.txt");
 
@@ -49,30 +49,29 @@ void handle_connection(int new_socket) {
 	char* buffer2 = malloc(data_size);
 	memcpy(buffer2, buffer, data_size);
 
-	// printf("(((((((((((((((((((( map stuff ))))))))))))))))))))\n");
+	// mapify request
+	struct map* m = initialize_map();
+	// get request lines
+	char** request_lines = tokenize_req_headers(buffer2);
+	printf("Tokenized request lines\n");
+	// try to convert to map, MAY NOT WORK
+	convert_to_map(m, request_lines);
+	// print map
+	print_map(m);
 
-	// struct map* m = initialize_map();
-	// put(m, "key1", "value1");
-	// put(m, "k2", "v2");
-	// put(m, "k2", "value2");
-	// put(m, "k3", "value1");
-	// print_map(m);
-
-	// printf("(((((((((((((((((((( map stuff ))))))))))))))))))))\n");
-
-	printf("(((((((((((((((((((( tokenize stuff ))))))))))))))))))))\n");
+	// printf("(((((((((((((((((((( tokenize stuff ))))))))))))))))))))\n");
 	char** lines = tokenize_req_headers(buffer2);
 	//print_tokenized_req_headers(lines);
-	printf("first line before 2nd tokenization: %s\n", lines[0]);
+	// printf("first line before 2nd tokenization: %s\n", lines[0]);
 	struct method_details* md = get_method_type(lines[0]);
-	printf("Method: %s\n", md->method);
-	printf("Url: %s\n", md->url);
+	// printf("Method: %s\n", md->method);
+	// printf("Url: %s\n", md->url);
 	free(md->method);
 	free(md->url);
 	free(md);
-	printf("first line after 2nd tokenizing: %s\n", lines[0]);
+	// printf("first line after 2nd tokenizing: %s\n", lines[0]);
 
-	printf("(((((((((((((((((((( tokenize stuff ))))))))))))))))))))\n");
+	// printf("(((((((((((((((((((( tokenize stuff ))))))))))))))))))))\n");
 
 	int bytes_written = write(new_socket, final_buffer, final_buffer_size - 1);
 	printf("Bytes written = %d\n", bytes_written);

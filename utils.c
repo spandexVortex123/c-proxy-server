@@ -237,3 +237,96 @@ struct method_details* get_method_type(char* first_line) {
     free(buffer);
     return md;
 }
+
+// returns exactly size of key, need to add +1 for null byte
+int get_key_size(char* line) {
+	printf("inside get key size function\n");
+	int i=0;
+	while(line[i] != '\0') {
+		if (line[i] == ':') {
+			return i;
+		}
+		i += 1;
+	}
+	return -1;
+}
+
+// copy value
+void copy_value(char* line, char* buffer, int start, int end) {
+	printf("in copy_value start: %d\n", start);
+	printf("in copy_value end: %d\n", end);
+
+	printf("buffer before update: %s\n", buffer);
+
+	/*	
+	while(start < end) {
+		printf("char = %c\n", ((char)line[start]));
+		buffer[start] = line[start];
+		printf("char = %c\n", ((char)buffer[start]));
+		start += 1;
+	}
+	buffer[start] = '\0';
+	*/
+
+	int i =0;
+	printf("----------------------debug---------------------\n");
+	while(buffer[i] != '\0') {
+		printf("0x%x\n", buffer[i]);
+	}
+	printf("----------------------debug---------------------\n");
+
+}
+
+// convert request lines to map
+void convert_to_map(struct map* m, char** request_lines) {
+	if (m == NULL || request_lines == NULL) {
+		fprintf(stderr, "Error m or request_lines NULL\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// lines loop
+	int i = 0;
+	while(request_lines[i] != NULL) {
+		char* line = request_lines[i];
+		int key_size = get_key_size(line);
+		if (key_size > 0) {
+			// allocate memory
+			char* key_buffer = malloc((sizeof(char) * key_size) + 2);
+			if (key_buffer == NULL) {
+				fprintf(stderr, "Error creating buffer for key\n");
+				exit(EXIT_FAILURE);
+			}
+			// copy key
+			memcpy(key_buffer, line, key_size);
+			key_buffer[key_size] = '\0';
+			// get value
+			int value_size = get_size_for_char_ptr(line) - (key_size + 2);
+			printf("Value size: %d\n", value_size);
+			if (value_size > 0) {
+				char* value_buffer = malloc(sizeof(char) * value_size);
+				if (value_buffer == NULL) {
+					fprintf(stderr, "error creating buffer for value\n");
+					exit(EXIT_FAILURE);
+				}
+				// memcpy(line + key_size + 2, value_buffer, value_size);
+				copy_value(line, value_buffer, key_size + 2, get_size_for_char_ptr(line));
+				printf("Value pointer: %p\n", value_buffer);
+				printf("Value: %s\n", value_buffer);
+				put(m, key_buffer, value_buffer);
+			}
+		}
+		i += 1;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
